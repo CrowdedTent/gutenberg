@@ -1,8 +1,7 @@
-import { viewPort } from '@wordpress/utils';
-
 export const PREFERENCES_DEFAULTS = {
 	mode: 'visual',
-	isSidebarOpened: ! viewPort.isExtraSmall(),
+	isSidebarOpened: true,
+	isSidebarOpenedMobile: false,
 	panels: { 'post-status': true },
 	recentlyUsedBlocks: [],
 	blockUsage: {},
