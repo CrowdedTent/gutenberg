@@ -7,14 +7,13 @@ import {
 	get,
 	reduce,
 	castArray,
-	compact,
 	findIndex,
+	includes,
 	isObjectLike,
 	filter,
 	find,
 	first,
 	flatMap,
-	uniq,
 } from 'lodash';
 
 /**
@@ -67,6 +66,35 @@ export function createBlock( name, blockAttributes = {} ) {
 }
 
 /**
+ * Returns a predicate that receives a transformation and returns true if the given
+ * transformation is able to execute in the situation specified in the params
+ *
+ * @param  {String}    sourceName    Block name
+ * @param  {Boolean}   isMultiBlock  Array of possible block transformations
+ * @return {Function}                Predicate that receives a block type.
+ */
+const isTransformForBlockSource = ( sourceName, isMultiBlock = false ) => ( transform ) => (
+	transform.type === 'block' &&
+	transform.blocks.indexOf( sourceName ) !== -1 &&
+	( ! isMultiBlock || transform.isMultiBlock )
+);
+
+/**
+ * Returns a predicate that receives a block type and returns true if the given block type contains a
+ * transformation able to execute in the situation specified in the params
+ *
+ * @param  {String}    sourceName    Block name
+ * @param  {Boolean}   isMultiBlock  Array of possible block transformations
+ * @return {Function}                Predicate that receives a block type.
+ */
+const createIsTypeTransformableFrom = ( sourceName, isMultiBlock = false ) => ( type ) => (
+	!! find(
+		get( type, 'transforms.from', [] ),
+		isTransformForBlockSource( sourceName, isMultiBlock ),
+	)
+);
+
+/**
  * Returns an array of possible block transformations that could happen on the set of blocks received as argument.
  *
  * @param  {Array}  blocks Blocks array
@@ -84,12 +112,9 @@ export function getPossibleBlockTransformations( blocks ) {
 		return [];
 	}
 
-	const blocksToBeTransformedFrom = filter( getBlockTypes(), type =>
-		find(
-			get( type, 'transforms.from', [] ),
-			t => t.type === 'block' && t.blocks.indexOf( sourceBlockName ) !== -1 &&
-			( ! isMultiBlock || t.isMultiBlock )
-		)
+	const blocksToBeTransformedFrom = filter(
+		getBlockTypes(),
+		createIsTypeTransformableFrom( sourceBlockName, isMultiBlock ),
 	).map( type => type.name );
 
 	const blockType = getBlockType( sourceBlockName );
@@ -99,9 +124,16 @@ export function getPossibleBlockTransformations( blocks ) {
 		transformation => transformation.blocks
 	);
 
-	return uniq( compact(
-		blocksToBeTransformedFrom.concat( blocksToBeTransformedTo ).map( name => getBlockType( name ) )
-	) );
+	return reduce( [
+		...blocksToBeTransformedFrom,
+		...blocksToBeTransformedTo,
+	], ( result, name ) => {
+		const transformBlockType = getBlockType( name );
+		if ( transformBlockType && ! includes( result, transformBlockType ) ) {
+			result.push( transformBlockType );
+		}
+		return result;
+	}, [] );
 }
 
 /**
