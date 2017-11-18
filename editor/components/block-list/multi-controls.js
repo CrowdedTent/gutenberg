@@ -13,7 +13,7 @@ import {
 	isMultiSelecting,
 } from '../../selectors';
 
-function VisualEditorBlockMultiControls( { multiSelectedBlockUids, isSelecting } ) {
+function BlockListMultiControls( { multiSelectedBlockUids, isSelecting } ) {
 	if ( isSelecting ) {
 		return null;
 	}
@@ -36,4 +36,4 @@ export default connect( ( state ) => {
 		multiSelectedBlockUids: getMultiSelectedBlockUids( state ),
 		isSelecting: isMultiSelecting( state ),
 	};
-} )( VisualEditorBlockMultiControls );
+} )( BlockListMultiControls );

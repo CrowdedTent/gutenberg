@@ -37,7 +37,7 @@ function InvalidBlockWarning( { ignoreInvalid, switchToBlockType } ) {
 				'Overwrite the external changes or Convert to %s or %s to keep ' +
 				'your changes.'
 			), defaultBlockType.title, htmlBlockType.title ) }</p>
-			<p className="visual-editor__invalid-block-warning-buttons">
+			<p>
 				<Button
 					onClick={ ignoreInvalid }
 					isLarge
